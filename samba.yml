@@ -1,0 +1,66 @@
+---
+# Instalación y configuración de Samba
+- name: Instalar Samba
+  apt:
+    name: samba
+    state: present
+    update_cache: yes
+
+- name: Crear grupo de Samba
+  group:
+    name: "{{ grupo_samba }}"
+    state: present
+
+- name: Crear usuario Samba
+  user:
+    name: "{{ usuario_samba }}"
+    groups: "{{ grupo_samba }}"
+    shell: /bin/bash
+    create_home: yes
+    state: present
+
+- name: Configurar contraseña Samba
+  command: >
+    smbpasswd -s -a {{ usuario_samba }}
+  args:
+    creates: "/var/lib/samba/private/secrets.tdb"
+  register: smbpasswd_result
+  ignore_errors: true
+  when: password_samba is defined
+  changed_when: "'Added user' in smbpasswd_result.stdout"
+
+- name: Crear carpeta de proyectos
+  file:
+    path: /srv/proyectos
+    state: directory
+    owner: "{{ usuario_samba }}"
+    group: "{{ grupo_samba }}"
+    mode: '0775'
+
+- name: Configurar smb.conf
+  template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+  notify: Reiniciar Samba
+
+roles/samba/handlers/main.yml
+---
+# Reinicio de Samba
+- name: Reiniciar Samba
+  service:
+    name: smbd
+    state: restarted
+
+roles/samba/templates/smb.conf.j2
+[global]
+   workgroup = WORKGROUP
+   security = user
+   map to guest = bad user
+
+[Proyectos]
+   path = /srv/proyectos
+   browsable = yes
+   writable = yes
+   valid users = @{{ grupo_samba }}
+   create mask = 0664
+   directory mask = 0775
