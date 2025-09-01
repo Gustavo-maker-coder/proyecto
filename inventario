@@ -1,0 +1,2 @@
+[innovasys]
+192.168.56.10 ansible_user=operador ansible_password=Passw0rd ansible_become_password=Passw0rd
