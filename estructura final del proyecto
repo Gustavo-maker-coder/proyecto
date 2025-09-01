@@ -1,0 +1,13 @@
+proyecto-innovasys/
+├── inventario
+├── sitio.yml
+├── roles/
+│   ├── apache/
+│   │   ├── tasks/main.yml
+│   │   ├── handlers/main.yml
+│   │   └── templates/index.html.j2
+│   └── samba/
+│       ├── tasks/main.yml
+│       ├── handlers/main.yml
+│       └── templates/smb.conf.j2
+└── README.md
